@@ -39,6 +39,8 @@ resource "aws_security_group" "instance" {
 resource "aws_autoscaling_group" "example" {
   launch_configuration = aws_launch_configuration.example.name
 
+  vpc_zone_identifier = [data.aws_subnet_ids.default.id]
+
   min_size = 2
   max_size = 10
 
@@ -49,8 +51,20 @@ resource "aws_autoscaling_group" "example" {
   }
 }
 
+# Variables for use in the resources
+
 variable "server_port" {
   description = "Port used for HTTP requests."
   type        = number
   default     = 8080
+}
+
+# Data Sources
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnet_ids" "default" {
+  vpc_id = data.aws_vpc.default.id
 }
