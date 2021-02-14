@@ -12,6 +12,12 @@ resource "aws_launch_configuration" "example" {
               echo "Hello, world" > index.html
               nohup busybox httpd -f -p ${var.server_port} &
               EOF   
+
+  #Required for ASG to set create before destroy.
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_security_group" "instance" {
