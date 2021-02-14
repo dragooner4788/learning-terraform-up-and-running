@@ -36,6 +36,34 @@ resource "aws_security_group" "instance" {
   }]
 }
 
+resource "aws_security_group" "alb" {
+  name = "terraform-example-alb"
+
+  ingress = [ {
+    cidr_blocks = [ "0.0.0.0/0" ]
+    description = null
+    from_port = 80
+    ipv6_cidr_blocks = null
+    prefix_list_ids = null
+    protocol = "http"
+    security_groups = null
+    self = false
+    to_port = 80
+  } ]
+
+  egress = [ {
+    cidr_blocks = [ "0.0.0.0/0" ]
+    description = null
+    from_port = 0
+    ipv6_cidr_blocks = null
+    prefix_list_ids = null
+    protocol = "http"
+    security_groups = null
+    self = false
+    to_port = 0
+  } ]
+}
+
 resource "aws_autoscaling_group" "example" {
   launch_configuration = aws_launch_configuration.example.name
 
@@ -52,9 +80,27 @@ resource "aws_autoscaling_group" "example" {
 }
 
 resource "aws_lb" "example" {
-  name               = "terraform-asg-example"
+  name = "terraform-asg-example"
   load_balancer_type = "application"
-  subnets            = [data.aws_subnet_ids.default.id]
+  subnets = [data.aws_subnet_ids.default.id]
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.example.arn
+  port = 80
+  protocol = "http"
+
+  # By default, return a simple 404 page
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "404: page not found"
+      status_code = 404
+    }
+  }
+
 }
 
 # Variables for use in the resources
