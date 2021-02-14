@@ -22,10 +22,9 @@ resource "aws_security_group" "instance" {
   name = "terraform-example-instance"
 
   ingress = {
-    cidr_blocks = [ "0.0.0.0/0" ]
     from_port = 8080
     to_port = 8080
     protocol = "tcp"
-    description = "allow all ip's to access resource"
+    cidr_blocks = [ "0.0.0.0/0" ]
   }
 }
