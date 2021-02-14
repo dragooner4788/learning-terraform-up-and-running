@@ -40,8 +40,20 @@ variable "server_port" {
   default = 8080
 }
 
-output "public_ip" {
+output "instance_public_ip" {
   value = aws_instance.example.public_ip
   description = "Gives public IP address of instance."
+  sensitive = false
+}
+
+output "instance_public_dns" {
+  value = aws_instance.example.public_dns
+  description = "Shows name of instance."
+  sensitive = false
+}
+
+output "instance_arn"{
+  value = aws_instance.example.arn
+  description = "Shows arn of instance."
   sensitive = false
 }
