@@ -10,7 +10,7 @@ resource "aws_instance" "example" {
   user_data = <<-EOF
               #!/bin/bash
               echo "Hello, world" > index.html
-              nohup busybox httpd -f -p 8080 &
+              nohup busybox httpd -f -p ${var.server_port} &
               EOF   
 
   tags = {
@@ -24,12 +24,18 @@ resource "aws_security_group" "instance" {
 ingress = [ {
   cidr_blocks = [ "0.0.0.0/0" ]
   description = "Allows for communication with Web Server to say Hello World."
-  from_port = 8080
+  from_port = var.server_port
   ipv6_cidr_blocks = null
   prefix_list_ids = null
   protocol = "tcp"
   security_groups = null
   self = null
-  to_port = 8080
+  to_port = var.server_port
 } ]
 } 
+
+variable "server_port" {
+  description = "Port used for HTTP requests."
+  type = number
+  default = 8080
+}
