@@ -57,3 +57,7 @@ output "instance_arn"{
   description = "Shows arn of instance."
   sensitive = false
 }
+
+output "instance_name" {
+  value = aws_instance.example.tags.Name
+}
