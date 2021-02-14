@@ -51,6 +51,12 @@ resource "aws_autoscaling_group" "example" {
   }
 }
 
+resource "aws_lb" "example" {
+  name               = "terraform-asg-example"
+  load_balancer_type = "application"
+  subnets            = [data.aws_subnet_ids.default.id]
+}
+
 # Variables for use in the resources
 
 variable "server_port" {
