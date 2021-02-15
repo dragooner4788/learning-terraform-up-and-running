@@ -39,36 +39,39 @@ resource "aws_security_group" "instance" {
 resource "aws_security_group" "alb" {
   name = "terraform-example-alb"
 
-  ingress = [ {
-    cidr_blocks = [ "0.0.0.0/0" ]
-    description = null
-    from_port = 80
+  ingress = [{
+    cidr_blocks      = ["0.0.0.0/0"]
+    description      = null
+    from_port        = 80
     ipv6_cidr_blocks = null
-    prefix_list_ids = null
-    protocol = "http"
-    security_groups = null
-    self = false
-    to_port = 80
-  } ]
+    prefix_list_ids  = null
+    protocol         = "http"
+    security_groups  = null
+    self             = false
+    to_port          = 80
+  }]
 
-  egress = [ {
-    cidr_blocks = [ "0.0.0.0/0" ]
-    description = null
-    from_port = 0
+  egress = [{
+    cidr_blocks      = ["0.0.0.0/0"]
+    description      = null
+    from_port        = 0
     ipv6_cidr_blocks = null
-    prefix_list_ids = null
-    protocol = "http"
-    security_groups = null
-    self = false
-    to_port = 0
-  } ]
+    prefix_list_ids  = null
+    protocol         = "http"
+    security_groups  = null
+    self             = false
+    to_port          = 0
+  }]
 }
 
 resource "aws_autoscaling_group" "example" {
   launch_configuration = aws_launch_configuration.example.name
 
   vpc_zone_identifier = [data.aws_subnet_ids.default.id]
-  
+
+  target_group_arns = [aws_lb_target_group.asg.arn]
+  health_check_type = "ELB"
+
 
   min_size = 2
   max_size = 10
@@ -81,16 +84,16 @@ resource "aws_autoscaling_group" "example" {
 }
 
 resource "aws_lb" "example" {
-  name = "terraform-asg-example"
+  name               = "terraform-asg-example"
   load_balancer_type = "application"
-  subnets = [data.aws_subnet_ids.default.id]
-  security_groups = [ data.aws_security_group.alb.id ]
+  subnets            = [data.aws_subnet_ids.default.id]
+  security_groups    = [aws_security_group.alb.id]
 }
 
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.example.arn
-  port = 80
-  protocol = "http"
+  port              = 80
+  protocol          = "http"
 
   # By default, return a simple 404 page
   default_action {
@@ -99,25 +102,41 @@ resource "aws_lb_listener" "http" {
     fixed_response {
       content_type = "text/plain"
       message_body = "404: page not found"
-      status_code = 404
+      status_code  = 404
     }
   }
 
 }
 
+resource "aws_lb_listener_rule" "asg" {
+  listener_arn = aws_lb_listener.http.arn
+  priority = 100
+
+  condition {
+    path_pattern {
+      values = ["*"]
+    }
+  }
+
+  action{
+    type = "forward"
+    target_group_arn = aws_lb_target_group.asg.arn
+  }
+}
+
 resource "aws_lb_target_group" "asg" {
-  name = "terraform-asg-example"
-  port = var.server_port
+  name     = "terraform-asg-example"
+  port     = var.server_port
   protocol = "http"
-  vpc_id = data.aws_vpc.default.id
+  vpc_id   = data.aws_vpc.default.id
 
   health_check {
-    path = "/"
-    protocol = "http"
-    matcher = "200"
-    interval = 15
-    timeout = 3
-    healthy_threshold = 2
+    path                = "/"
+    protocol            = "http"
+    matcher             = "200"
+    interval            = 15
+    timeout             = 3
+    healthy_threshold   = 2
     unhealthy_threshold = 2
   }
 
