@@ -159,3 +159,10 @@ data "aws_vpc" "default" {
 data "aws_subnet_ids" "default" {
   vpc_id = data.aws_vpc.default.id
 }
+
+# Output Variables
+
+output "alb_dns_name" {
+  value = aws_lb.example.dns_name
+  description = "The domain name of the load balancer"
+}
