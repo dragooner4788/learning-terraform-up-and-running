@@ -45,7 +45,7 @@ resource "aws_security_group" "alb" {
     from_port        = 80
     ipv6_cidr_blocks = null
     prefix_list_ids  = null
-    protocol         = "HTTP"
+    protocol         = "tcp"
     security_groups  = null
     self             = false
     to_port          = 80
@@ -67,7 +67,7 @@ resource "aws_security_group" "alb" {
 resource "aws_autoscaling_group" "example" {
   launch_configuration = aws_launch_configuration.example.name
 
-  vpc_zone_identifier = [data.aws_subnet_ids.default.id]
+  vpc_zone_identifier = data.aws_subnet_ids.default.id
 
   target_group_arns = [aws_lb_target_group.asg.arn]
   health_check_type = "ELB"
@@ -90,7 +90,7 @@ resource "aws_lb" "example" {
   security_groups    = [aws_security_group.alb.id]
 }
 
-resource "aws_lb_listener" "HTTP" {
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.example.arn
   port              = 80
   protocol          = "HTTP"
@@ -110,7 +110,7 @@ resource "aws_lb_listener" "HTTP" {
 
 resource "aws_lb_listener_rule" "asg" {
   listener_arn = aws_lb_listener.http.arn
-  priority = 100
+  priority     = 100
 
   condition {
     path_pattern {
@@ -118,8 +118,8 @@ resource "aws_lb_listener_rule" "asg" {
     }
   }
 
-  action{
-    type = "forward"
+  action {
+    type             = "forward"
     target_group_arn = aws_lb_target_group.asg.arn
   }
 }
@@ -163,6 +163,6 @@ data "aws_subnet_ids" "default" {
 # Output Variables
 
 output "alb_dns_name" {
-  value = aws_lb.example.dns_name
+  value       = aws_lb.example.dns_name
   description = "The domain name of the load balancer"
 }
