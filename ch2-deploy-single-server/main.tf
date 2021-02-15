@@ -45,7 +45,7 @@ resource "aws_security_group" "alb" {
     from_port        = 80
     ipv6_cidr_blocks = null
     prefix_list_ids  = null
-    protocol         = "http"
+    protocol         = "HTTP"
     security_groups  = null
     self             = false
     to_port          = 80
@@ -57,7 +57,7 @@ resource "aws_security_group" "alb" {
     from_port        = 0
     ipv6_cidr_blocks = null
     prefix_list_ids  = null
-    protocol         = "http"
+    protocol         = "-1"
     security_groups  = null
     self             = false
     to_port          = 0
@@ -90,10 +90,10 @@ resource "aws_lb" "example" {
   security_groups    = [aws_security_group.alb.id]
 }
 
-resource "aws_lb_listener" "http" {
+resource "aws_lb_listener" "HTTP" {
   load_balancer_arn = aws_lb.example.arn
   port              = 80
-  protocol          = "http"
+  protocol          = "HTTP"
 
   # By default, return a simple 404 page
   default_action {
@@ -127,12 +127,12 @@ resource "aws_lb_listener_rule" "asg" {
 resource "aws_lb_target_group" "asg" {
   name     = "terraform-asg-example"
   port     = var.server_port
-  protocol = "http"
+  protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id
 
   health_check {
     path                = "/"
-    protocol            = "http"
+    protocol            = "HTTP"
     matcher             = "200"
     interval            = 15
     timeout             = 3
